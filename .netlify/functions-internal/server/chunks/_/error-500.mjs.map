@@ -1,1 +1,1 @@
-{"version":3,"file":"error-500.mjs","sources":["../../../../../node_modules/nuxt/dist/core/runtime/nitro/templates/error-500.js"],"sourcesContent":null,"names":[],"mappings":"","x_google_ignoreList":[0]}
+{"version":3,"file":"error-500.mjs","sources":["../../../../../node_modules/.pnpm/@nuxt+nitro-server@3.21.2_d_9f2d3c2329b63e5c373c756bb406c2f4/node_modules/@nuxt/nitro-server/dist/runtime/templates/error-500.mjs"],"names":["_messages","appName","version","status","statusText","description","template","messages","escapeHtml"],"mappings":"","x_google_ignoreList":[0]}

@@ -9,11 +9,6 @@ export default defineNuxtConfig({
   // Optimize for production
   nitro: {
     preset: 'netlify',
-    prerender: {
-      crawlLinks: true,
-      routes: ['/sitemap.xml'],
-      ignore: ['/admin']
-    },
     minify: true,
   },
   
