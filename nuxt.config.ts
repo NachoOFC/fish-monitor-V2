@@ -4,11 +4,27 @@ export default defineNuxtConfig({
     baseURL: '/',
   },
   compatibilityDate: "2025-05-15",
-  devtools: { enabled: true },
+  devtools: { enabled: false }, // Disabled in production
   
   // Optimize for production
   nitro: {
-    preset: 'netlify'
+    preset: 'netlify',
+    prerender: {
+      crawlLinks: true,
+      routes: ['/sitemap.xml'],
+      ignore: ['/admin']
+    },
+    minify: true,
+  },
+  
+  // Performance optimizations
+  build: {
+    transpile: ['chart.js'],
+  },
+  
+  experimental: {
+    payloadExtraction: false,
+    renderJsonPayloads: true,
   },
   
   modules: [
@@ -44,10 +60,9 @@ export default defineNuxtConfig({
   },
 
   runtimeConfig: {
-    // Variables privadas disponibles solo en el servidor
-    MONGODB_URI: process.env.MONGODB_URI,
     public: {
-      apiBase: process.env.API_BASE || "http://localhost:3000",
+      apiBase: process.env.API_BASE || "https://api.example.com",
+      siteUrl: process.env.SITE_URL || "https://fish-monitor.netlify.app",
     },
   },
 

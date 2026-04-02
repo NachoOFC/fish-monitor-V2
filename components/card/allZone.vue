@@ -91,45 +91,24 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue';
+<script setup lang="ts">
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useZone } from '~/stores/useZone';
 
 const router = useRouter();
 const emit = defineEmits(['create-zone']);
 
-const zones = ref([]);
-const loading = ref(true);
-const error = ref(null);
+const zoneStore = useZone();
+const zones = computed(() => zoneStore.zones);
+const loading = computed(() => false);
+const error = computed(() => null);
 
-onMounted(async () => {
-  await fetchZones();
-});
-
-const fetchZones = async () => {
-  loading.value = true;
-  error.value = null;
-  
-  try {
-    const response = await fetch('/api/get/zone');
-    if (!response.ok) {
-      throw new Error('Error al cargar las zonas');
-    }
-    const data = await response.json();
-    zones.value = data.zones || [];
-  } catch (err) {
-    console.error('Error fetching zones:', err);
-    error.value = 'No se pudieron cargar las zonas';
-  } finally {
-    loading.value = false;
-  }
-};
-
-const viewZoneDetails = (zoneId) => {
+const viewZoneDetails = (zoneId: string) => {
   router.push(`/settings/zones/${zoneId}`);
 };
 
-const editZone = (zoneId) => {
-  router.push(`/settings/zones/${zoneId}/edit`);
+const editZone = (zoneId: string) => {
+  router.push(`/settings/control-panel`);
 };
 </script>

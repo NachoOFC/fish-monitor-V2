@@ -31,79 +31,45 @@
         <div class="flex justify-between items-start">
           <div>
             <div class="flex items-center">
-              <h4 class="font-medium text-gray-900 dark:text-white">{{ tank.nombre }}</h4>
+              <h4 class="font-medium text-gray-900 dark:text-white">{{ tank.name }}</h4>
               <span 
                 :class="{
-                  'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': tank.estado === 'activo',
-                  'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300': tank.estado === 'inactivo',
-                  'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300': tank.estado === 'mantenimiento'
+                  'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': tank.isActive,
+                  'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300': !tank.isActive
                 }"
                 class="text-xs font-medium ml-2 px-2.5 py-0.5 rounded-full"
               >
-                {{ tank.estado }}
+                {{ tank.isActive ? 'Activo' : 'Inactivo' }}
               </span>
             </div>
             <p class="text-xs text-gray-400 mt-1">
               <Icon name="mdi:map-marker" class="inline-block mr-1" />
-              {{ tank.ubicación?.dirección || 'Sin dirección' }}
-              <span v-if="tank.ubicación?.latitud && tank.ubicación?.longitud">
-                ({{ tank.ubicación.latitud }}, {{ tank.ubicación.longitud }})
-              </span>
+              {{ tank.branch }}
             </p>
             <div class="grid grid-cols-2 gap-2 mt-2 text-xs text-gray-500 dark:text-gray-400">
               <span class="flex items-center">
                 <Icon name="mdi:water" class="mr-1" />
-                {{ tank.capacidad }} litros
+                {{ tank.capacidad }} L
               </span>
               <span class="flex items-center">
                 <Icon name="mdi:shape" class="mr-1" />
                 {{ tank.tipo }}
               </span>
               <span class="flex items-center">
-                <Icon name="mdi:material-design" class="mr-1" />
-                {{ tank.material }}
-              </span>
-              <span class="flex items-center" v-if="tank.sensores && tank.sensores.length">
-                <Icon name="mdi:chip" class="mr-1" />
-                Sensores: {{ tank.sensores.join(', ') }}
-              </span>
-              <span class="flex items-center" v-if="tank.especies && tank.especies.length">
                 <Icon name="mdi:fish" class="mr-1" />
-                Especies: {{ tank.especies.join(', ') }}
+                {{ tank.especie }}
               </span>
-              <span class="flex items-center" v-if="tank.población">
+              <span class="flex items-center">
                 <Icon name="mdi:counter" class="mr-1" />
-                {{ tank.población.total_peces }} peces / {{ tank.población.biomasa_kg }} kg
+                {{ tank.poblacion }} peces
               </span>
-              <span class="flex items-center" v-if="tank.condiciones">
-                <Icon name="mdi:thermometer" class="mr-1" />
-                {{ tank.condiciones.temperatura_c }} °C
-                <span v-if="tank.condiciones.ph">/ pH: {{ tank.condiciones.ph }}</span>
-                <span v-if="tank.condiciones.oxígeno">/ O₂: {{ tank.condiciones.oxígeno }} mg/L</span>
-              </span>
-              <span class="flex items-center" v-if="tank.fecha_creación">
+              <span class="flex items-center">
                 <Icon name="mdi:calendar-plus" class="mr-1" />
-                {{ new Date(tank.fecha_creación).toLocaleDateString() }}
+                {{ new Date(tank.createdAt).toLocaleDateString() }}
               </span>
-              <span class="flex items-center" v-if="tank.última_inspección">
-                <Icon name="mdi:calendar-check" class="mr-1" />
-                Últ. inspección: {{ new Date(tank.última_inspección).toLocaleDateString() }}
-              </span>
-              <span class="flex items-center" v-if="tank.createdAt">
-                <Icon name="mdi:calendar" class="mr-1" />
-                Creado: {{ new Date(tank.createdAt).toLocaleDateString() }}
-              </span>
-              <span class="flex items-center" v-if="tank.updatedAt">
+              <span class="flex items-center">
                 <Icon name="mdi:calendar-edit" class="mr-1" />
-                Modificado: {{ new Date(tank.updatedAt).toLocaleDateString() }}
-              </span>
-              <span class="flex items-center" v-if="tank.branch_id">
-                <Icon name="mdi:source-branch" class="mr-1" />
-                Sucursal: {{ tank.branch_id.name || tank.branch_id }}
-              </span>
-              <span class="flex items-center" v-if="tank.zone_id">
-                <Icon name="mdi:map" class="mr-1" />
-                Zona: {{ tank.zone_id.name || tank.zone_id }}
+                {{ new Date(tank.updatedAt).toLocaleDateString() }}
               </span>
             </div>
           </div>
@@ -141,44 +107,23 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useTank } from '~/stores/useTank';
 
 const router = useRouter();
 const emit = defineEmits(['create-tank']);
 
-const tanks = ref([]);
-const loading = ref(true);
-const error = ref(null);
-
-onMounted(async () => {
-  await fetchTanks();
-});
-
-const fetchTanks = async () => {
-  loading.value = true;
-  error.value = null;
-  
-  try {
-    const response = await fetch('/api/get/tank');
-    if (!response.ok) {
-      throw new Error('Error al cargar los estanques');
-    }
-    const data = await response.json();
-    tanks.value = data.tanks || [];
-  } catch (err) {
-    console.error('Error fetching tanks:', err);
-    error.value = 'No se pudieron cargar los estanques';
-  } finally {
-    loading.value = false;
-  }
-};
+const tankStore = useTank();
+const tanks = computed(() => tankStore.tanks);
+const loading = computed(() => false);
+const error = computed(() => null);
 
 const viewTankDetails = (tankId) => {
-  router.push(`/settings/tanks/${tankId}`);
+  router.push(`/dashboard/tank/${tankId}`);
 };
 
 const editTank = (tankId) => {
-  router.push(`/settings/tanks/${tankId}/edit`);
+  router.push(`/settings/control-panel`);
 };
 </script>

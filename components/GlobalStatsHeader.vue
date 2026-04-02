@@ -36,33 +36,49 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
+import { useTank } from '~/stores/useTank';
+import { useSensor } from '~/stores/useSensor';
 
-const stats = ref(null);
-const loading = ref(true);
+const tankStore = useTank();
+const sensorStore = useSensor();
+const loading = ref(false);
 const error = ref('');
 
-async function fetchGlobalStats() {
-  loading.value = true;
-  error.value = '';
-  try {
-    const response = await $fetch('/api/get/tank');
-    if (response.success && response.summary) {
-      stats.value = response.summary;
-    } else {
-      throw new Error('Respuesta de API inválida o resumen no encontrado.');
-    }
-  } catch (err) {
-    console.error('Error fetching global stats:', err);
-    error.value = err.data?.message || err.message || 'Error desconocido.';
-    stats.value = null; // Clear stats on error
-  } finally {
-    loading.value = false;
-  }
-}
+const stats = computed(() => {
+  const tanks = tankStore.tanks || [];
+  
+  // Total tanks
+  const totalTanks = tanks.length;
+  
+  // Total fish (población)
+  const totalFish = tanks.reduce((sum, tank) => {
+    return sum + (tank.poblacion || 0);
+  }, 0);
+  
+  // Average temperature from sensors
+  const sensors = sensorStore.sensors || [];
+  const tempSensors = sensors.filter(s => s.tipo === 'Temperatura');
+  const averageTemperature = tempSensors.length > 0
+    ? (tempSensors.reduce((sum, s) => sum + (s.ultimoValor || 0), 0) / tempSensors.length).toFixed(1)
+    : 'N/A';
+  
+  // Total biomass
+  const totalBiomassKg = tanks.reduce((sum, tank) => {
+    // Estimación: población * 0.5 kg promedio por pez
+    return sum + ((tank.poblacion || 0) * 0.5);
+  }, 0).toFixed(1);
+  
+  return {
+    totalTanks,
+    totalFish,
+    averageTemperature,
+    totalBiomassKg
+  };
+});
 
 onMounted(() => {
-  fetchGlobalStats();
+  loading.value = false;
 });
 </script>
 

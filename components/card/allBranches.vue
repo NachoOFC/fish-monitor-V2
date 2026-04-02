@@ -113,44 +113,23 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { computed } from "vue";
 import { useRouter } from "vue-router";
+import { useBranch } from "~/stores/useBranch";
 
 const router = useRouter();
 const emit = defineEmits(["create-branch"]);
 
-const branches = ref([]);
-const loading = ref(true);
-const error = ref(null);
-
-onMounted(async () => {
-  await fetchBranches();
-});
-
-const fetchBranches = async () => {
-  loading.value = true;
-  error.value = null;
-
-  try {
-    const response = await fetch("/api/get/branch");
-    if (!response.ok) {
-      throw new Error("Error al cargar las sucursales");
-    }
-    const data = await response.json();
-    branches.value = data.branches || [];
-  } catch (err) {
-    console.error("Error fetching branches:", err);
-    error.value = "No se pudieron cargar las sucursales";
-  } finally {
-    loading.value = false;
-  }
-};
+const branchStore = useBranch();
+const branches = computed(() => branchStore.branches);
+const loading = computed(() => false);
+const error = computed(() => null);
 
 const viewBranchDetails = (branchId) => {
-  router.push(`/settings/branches/${branchId}`);
+  router.push(`/dashboard/branch/${branchId}`);
 };
 
 const editBranch = (branchId) => {
-  router.push(`/settings/branches/${branchId}/edit`);
+  router.push(`/settings/control-panel`);
 };
 </script>

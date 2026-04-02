@@ -32,23 +32,22 @@
 
           <!-- Tank Section -->
           <div class="tank-section">
-            <h4 class="section-title">Estanques ({{ zone.estanques.length }})</h4>
-            
-            <div v-if="zone.estanques.length === 0" class="no-tanks">
-              No hay estanques en esta zona
-            </div>
-            
-            <div v-else class="tank-grid">
-              <div v-for="tank in zone.estanques.slice(0, 4)" :key="tank._id" class="tank-item">
-                <div class="tank-indicator"></div>
-                <span class="tank-name">{{ tank.nombre || tank.name || 'Estanque' }}</span>
+            <h4 class="section-title">Información</h4>
+            <p class="zone-description">{{ zone.descripcion }}</p>
+            <div class="zone-stats">
+              <div class="stat-item">
+                <Icon name="material-symbols:square-rounded" />
+                <span>{{ zone.area || 0 }} m²</span>
+              </div>
+              <div class="stat-item">
+                <Icon name="material-symbols:sensors" />
+                <span>{{ zone.sensores || 0 }} sensores</span>
+              </div>
+              <div class="stat-item">
+                <Icon name="material-symbols:videocam" />
+                <span>{{ zone.camaras || 0 }} cámaras</span>
               </div>
             </div>
-
-            <button @click="goToEstanques(zone._id)" class="view-details-btn">
-              <Icon name="material-symbols:visibility" />
-              Ver Estanques
-            </button>
           </div>
         </div>
       </div>
@@ -59,44 +58,19 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import { useZone } from '~/stores/useZone'
 
 const router = useRouter();
 const route = useRoute();
 const zones = ref([]);
 
-const fetchZones = async () => {
-  try {
-    const branchId = route.params.id;
-    const response = await $fetch(`/api/get/zone?branch_id=${branchId}`);
-    const tanksRes = await $fetch(`/api/get/tank`);
-    if (response.success && response.zones) {
-      const zonesWithTanks = response.zones.map((zone) => ({
-        ...zone,
-        estanques:
-          tanksRes.success && tanksRes.tanks
-            ? tanksRes.tanks.filter((t) => {
-                if (!t.zone_id) return false;
-                if (typeof t.zone_id === "string")
-                  return t.zone_id === zone._id;
-                if (typeof t.zone_id === "object")
-                  return t.zone_id._id === zone._id;
-                return false;
-              })
-            : [],
-      }));
-      zones.value = zonesWithTanks;
-    }
-  } catch (error) {
-    console.error('Error fetching zones:', error);
-  }
+const fetchZones = () => {
+  const zoneStore = useZone()
+  zones.value = zoneStore.zones
 };
 
 const goBack = () => {
-  window.history.length > 1 ? router.back() : router.push("/dashboard");
-};
-
-const goToEstanques = (zoneId) => {
-  router.push({ path: `/dashboard/tank/${zoneId}` });
+  router.push("/dashboard");
 };
 
 onMounted(() => {

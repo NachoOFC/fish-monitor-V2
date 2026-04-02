@@ -113,54 +113,30 @@
   </div>
 </template>
 
-<script setup>
-import { ref, onMounted } from 'vue';
+<script setup lang="ts">
+import { computed } from 'vue';
 import { useRouter } from 'vue-router';
+import { useUser } from '~/stores/useUser';
 
 const router = useRouter();
 const emit = defineEmits(['create-user']);
 
-const users = ref([]);
-const loading = ref(true);
-const error = ref(null);
+const userStore = useUser();
+const users = computed(() => userStore.users);
+const loading = computed(() => false);
+const error = computed(() => null);
 
-onMounted(async () => {
-  await fetchUsers();
-});
-
-const fetchUsers = async () => {
-  loading.value = true;
-  error.value = null;
-  
-  try {
-    const response = await fetch('/api/get/user');
-    if (!response.ok) {
-      throw new Error('Error al cargar los usuarios');
-    }
-    const data = await response.json();
-    users.value = data.users || [];
-  } catch (err) {
-    console.error('Error fetching users:', err);
-    error.value = 'No se pudieron cargar los usuarios';
-  } finally {
-    loading.value = false;
-  }
+const getUserInitials = (user: { name?: string }) => {
+  if (!user || !user.name) return '?';
+  const names = user.name.split(' ');
+  return (names[0]?.charAt(0) + (names[1]?.charAt(0) || '')).toUpperCase();
 };
 
-const getUserInitials = (user) => {
-  if (!user || (!user.nombre && !user.apellido)) return '?';
-  
-  const nombre = user.nombre || '';
-  const apellido = user.apellido || '';
-  
-  return (nombre.charAt(0) + (apellido.charAt(0) || '')).toUpperCase();
-};
-
-const viewUserDetails = (userId) => {
+const viewUserDetails = (userId: string) => {
   router.push(`/settings/users/${userId}`);
 };
 
-const editUser = (userId) => {
-  router.push(`/settings/users/${userId}/edit`);
+const editUser = (userId: string) => {
+  router.push(`/settings/control-panel`);
 };
 </script>

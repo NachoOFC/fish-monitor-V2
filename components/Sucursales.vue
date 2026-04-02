@@ -85,42 +85,17 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from "vue";
+import { computed } from "vue";
 import { useRouter } from "vue-router";
+import { useBranch } from '~/stores/useBranch'
 
-const branches = ref([]);
 const router = useRouter();
+const branchStore = useBranch()
+const branches = computed(() => branchStore.branches)
 
-const fetchBranches = async () => {
-  try {
-    const response = await $fetch("/api/get/branch");
-    if (response.success && response.branches) {
-      // Para cada sucursal, obtener sus zonas
-      const branchesWithZones = await Promise.all(
-        response.branches.map(async (branch) => {
-          const zonesRes = await $fetch(
-            `/api/get/zone?branch_id=${branch._id}`
-          );
-          return {
-            ...branch,
-            zonas: zonesRes.success && zonesRes.zones ? zonesRes.zones : [],
-          };
-        })
-      );
-      branches.value = branchesWithZones;
-    }
-  } catch (error) {
-    // Manejo de error opcional
-  }
-};
-
-const goToZonas = (branchId) => {
+const goToZonas = (branchId: string) => {
   router.push({ path: `/dashboard/branch/${branchId}` });
 };
-
-onMounted(() => {
-  fetchBranches();
-});
 </script>
 
 <style scoped>

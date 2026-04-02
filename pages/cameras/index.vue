@@ -148,47 +148,33 @@
 
 <script setup>
 import { ref, computed, onMounted } from 'vue'
+import { useCamera } from '~/stores/useCamera'
 
-const cameras = ref([])
-const loading = ref(true)
+const cameraStore = useCamera()
+const loading = ref(false)
 const error = ref(null)
 
 // Computed properties
+const cameras = computed(() => {
+  return (cameraStore.cameras || []).map(camera => ({
+    ...camera,
+    hover: false
+  }))
+})
+
 const activeCameras = computed(() => {
-  return cameras.value.filter(camera => camera.active !== false).length
+  return cameras.value.filter(camera => camera.estado === 'Activa' || camera.active !== false).length
 })
 
 const cameraTypes = computed(() => {
   const types = new Set()
   cameras.value.forEach(camera => {
-    if (camera.camera_type?.name) {
-      types.add(camera.camera_type.name)
+    if (camera.name) {
+      types.add(camera.name.split('-')[0] || 'Cámara')
     }
   })
   return Array.from(types)
 })
-
-// Methods
-const fetchCameras = async () => {
-  loading.value = true
-  error.value = null
-  try {
-    const response = await $fetch('/api/get/camera')
-    if (response.success) {
-      cameras.value = response.cameras.map(camera => ({
-        ...camera,
-        hover: false
-      }))
-    } else {
-      throw new Error(response.message || 'Error al cargar las cámaras')
-    }
-  } catch (err) {
-    console.error('Error fetching cameras:', err)
-    error.value = 'No se pudieron cargar las cámaras.'
-  } finally {
-    loading.value = false
-  }
-}
 
 const getLastConnection = (camera) => {
   // Simulate last connection time
@@ -207,7 +193,7 @@ const editCamera = (camera) => {
 }
 
 onMounted(() => {
-  fetchCameras()
+  loading.value = false
 })
 </script>
 
@@ -309,6 +295,7 @@ onMounted(() => {
   background: linear-gradient(135deg, #3b82f6, #8b5cf6);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
   margin-bottom: 0.5rem;
 }
 

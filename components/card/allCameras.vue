@@ -56,31 +56,13 @@
 </template>
 
 <script lang="ts" setup>
-import { ref, onMounted } from 'vue';
-import { useFetch } from '#imports';
+import { computed } from 'vue';
+import { useCamera } from '~/stores/useCamera';
 
-const cameras = ref([]);
-const loading = ref(true);
-const error = ref('');
-
-const fetchCameras = async () => {
-  loading.value = true;
-  error.value = '';
-  try {
-    const { data } = await useFetch('/api/get/camera');
-    if (data.value && data.value.success) {
-      cameras.value = data.value.cameras;
-    } else {
-      error.value = 'No se pudieron cargar las cámaras';
-    }
-  } catch (e) {
-    error.value = 'Error al cargar las cámaras';
-  } finally {
-    loading.value = false;
-  }
-};
-
-onMounted(fetchCameras);
+const cameraStore = useCamera();
+const cameras = computed(() => cameraStore.cameras);
+const loading = computed(() => false);
+const error = computed(() => '');
 </script>
 
 <style scoped>

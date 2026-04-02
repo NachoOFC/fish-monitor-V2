@@ -1,14 +1,19 @@
 {
   "name": "fish-monitor",
+  "version": "1.0.0",
+  "description": "Fish monitoring dashboard for aquaculture management",
   "private": true,
   "type": "module",
+  "packageManager": "pnpm@10.33.0",
   "scripts": {
     "build": "nuxt build",
     "dev": "nuxt dev",
     "start": "nuxt start",
     "generate": "nuxt generate",
     "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
+    "postinstall": "nuxt prepare",
+    "lint": "eslint .",
+    "typecheck": "nuxt typecheck"
   },
   "dependencies": {
     "@nuxt/eslint": "^1.4.0",
@@ -18,12 +23,9 @@
     "@nuxtjs/tailwindcss": "^6.14.0",
     "@pinia/nuxt": "^0.11.0",
     "chart.js": "^4.4.9",
-    "cookie-parser": "^1.4.7",
     "eslint": "^9.27.0",
     "jspdf": "^3.0.1",
     "jspdf-autotable": "^5.0.2",
-    "mongodb": "^6.16.0",
-    "mongoose": "^8.15.0",
     "nuxt": "^3.17.3",
     "pinia": "^3.0.2",
     "pinia-plugin-persistedstate": "^4.3.0",
@@ -36,6 +38,6 @@
     "@types/node": "^22.15.21"
   },
   "engines": {
-    "node": ">=18.0.0"
+    "node": ">=20.0.0"
   }
 }

@@ -184,6 +184,7 @@
 <script setup>
 import { ref, onMounted } from "vue";
 import { useRouter, useRoute } from "vue-router";
+import { useTank } from "~/stores/useTank";
 import jsPDF from "jspdf";
 import Chart from 'chart.js/auto';
 
@@ -250,26 +251,19 @@ const getBubbleStyle = (index) => {
   };
 };
 
-const fetchTanks = async () => {
-  try {
-    isLoading.value = true;
-    const zoneId = route.params.id;
-    const response = await $fetch(`/api/get/tank`);
-    if (response.success && response.tanks) {
-      tanks.value = response.tanks.filter((t) => {
-        if (!t.zone_id) return false;
-        if (typeof t.zone_id === "string") return t.zone_id === zoneId;
-        if (typeof t.zone_id === "object") return t.zone_id._id === zoneId;
-        return false;
-      });
-    }
-  } catch (error) {
-    console.error('Error fetching tanks:', error);
-  } finally {
-    setTimeout(() => {
-      isLoading.value = false;
-    }, 1000);
-  }
+const fetchTanks = () => {
+  const tankStore = useTank();
+  tanks.value = (tankStore.tanks || []).map(tank => ({
+    ...tank,
+    nombre: tank.name,
+    capacidad: tank.capacidad || 1000,
+    población: { biomasa_kg: (tank.poblacion || 0) * 0.5 },
+    tipo: tank.especie,
+    material: 'Concreto',
+    estado: tank.estado,
+    última_inspección: new Date().toISOString()
+  }));
+  isLoading.value = false;
 };
 
 const goBack = () => {
