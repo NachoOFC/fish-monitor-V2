@@ -1,11 +1,10 @@
 [build]
   command = "pnpm run build"
-  publish = ".output/public"
-  functions = "netlify/functions"
+  functions = ".netlify/functions-internal/server"
+  publish = ".nuxt/dist/client"
 
 [build.environment]
   NODE_VERSION = "20"
-  NITRO_PRERENDER = "true"
 
 # Security headers
 [[headers]]
